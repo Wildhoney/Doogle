@@ -25,5 +25,10 @@
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/Wildhoney/Similo.js/issues"
+  },
+  "dependencies": {
+    "express": "~3.4.4",
+    "phantomjs": "~1.9.2-2",
+    "node-phantom": "~0.2.5"
   }
 }
