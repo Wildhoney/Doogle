@@ -1,0 +1,29 @@
+{
+  "name": "Similo.js",
+  "version": "0.1.0",
+  "description": "Node.js app for taking HTML snapshots of JavaScript pages to make your dynamic apps Google crawlable.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wildhoney/Similo.js.git"
+  },
+  "keywords": [
+    "google",
+    "crawlable",
+    "ajax",
+    "javascript",
+    "angular",
+    "ember",
+    "meteor",
+    "knockout",
+    "spider"
+  ],
+  "author": "Adam Timberlake <adam.timberlake@gmail.com>",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Wildhoney/Similo.js/issues"
+  }
+}
