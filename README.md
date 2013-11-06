@@ -1,4 +1,4 @@
 Similo.js
 =========
 
-Node.js app for taking HTML snapshots of JavaScript pages to make your dynamic apps Google crawlable.
+For a complete reference on Google's AJAX crawling please see: https://developers.google.com/webmasters/ajax-crawling/docs/getting-started
