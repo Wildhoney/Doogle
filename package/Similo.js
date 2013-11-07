@@ -4,7 +4,10 @@
     var $phantom    = require('node-phantom'),
         $fs         = require('fs'),
         $util       = require('util'),
-        $crypto     = require('crypto');
+        $crypto     = require('crypto'),
+        $q          = require('q'),
+        $ansi       = require('ansi'),
+        $cursor     = $ansi(process.stdout);
 
     /**
      * @module Similo
@@ -44,9 +47,20 @@
         },
 
         /**
+         * @method throwError
+         * @param message {String}
+         * @return {void}
+         */
+        throwError: function throwError(message) {
+            message = $util.format(" %s\n", message);
+            $cursor.hex('#553c45').bg.hex('#e7a3bd').write(' Similo: ').reset().write(' ' + message + "\n");
+            this.reject(message);
+        },
+
+        /**
          * @method fetch
          * @param [path = "/"] {String}
-         * @return {void}
+         * @return {Q.promise}
          */
         fetch: function fetch(path) {
 
@@ -54,21 +68,34 @@
             var uri         = $util.format('%s/%s', this._uri, path || ''),
                 sha1        = $crypto.createHash('sha1').update(uri),
                 filename    = sha1.digest('hex'),
-                location    = $util.format('%s/%s.html', this._directory, filename);
+                location    = $util.format('%s/%s.html', this._directory, filename),
+                defer       = $q.defer(),
+                throwError  = this.throwError.bind(defer);
 
             $phantom.create(function create(error, phantom) {
+                if (error) return throwError(error);
 
-                return phantom.createPage(function(error, page) {
+                return phantom.createPage(function createPage(error, page) {
+                    if (error) return throwError(error);
 
                     page.open(uri, function openPage(error, status) {
+                        if (error) return throwError(error);
 
                         page.evaluate(function evaluatePage() {
 
                             return document.documentElement.innerHTML;
 
                         }, function evaluateResponse(error, result) {
+                            if (error) return throwError(error);
 
                             $fs.writeFile(location, result, function writeFile(error) {
+                                if (error) return throwError(error);
+
+                                // Resolve the promise because we have the file!
+                                defer.resolve({
+                                    name: $util.format('%s.html', filename)
+                                });
+
                                 phantom.exit();
                             });
 
@@ -80,12 +107,7 @@
 
             });
 
-//            page.open(url, function (status) {
-//                //Page is loaded!
-//                console.log(status);
-//                phantom.exit();
-//            });
-
+            return defer.promise;
 
         }
 

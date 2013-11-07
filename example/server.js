@@ -11,7 +11,9 @@ app.get('/', function(request, response) {
 
     similo.setDirectory(__dirname + '/snapshots');
 
-    similo.fetch('/');
+    similo.fetch('/').then(function(data) {
+        response.send(JSON.stringify(data));
+    });
 
 //    similo.fetch('/').expireIn(24).then(function(data) {
 //        response.send(JSON.stringify(data));
