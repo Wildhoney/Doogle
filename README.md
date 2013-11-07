@@ -12,7 +12,7 @@ For a complete reference on Google's AJAX crawling please see <a href="https://d
 Getting Started
 ---------
 
-Similo is **very** to get up and running with. First of all you need to let Similo know which base URL we're going to be using.
+Similo is **very** simple to get up and running with. First of all you need to let Similo know which base URL we're going to be using.
 
 ```javascript
 var similo = require('similo-js')('http://www.example.com/');
