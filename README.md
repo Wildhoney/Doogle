@@ -9,6 +9,8 @@ Google translates any hash-bang URLs (`#!`) it finds into an actual GET paramete
 
 For a complete reference on Google's AJAX crawling please see <a href="https://developers.google.com/webmasters/ajax-crawling/docs/getting-started" taregt="_blank">getting started</a>.
 
+Install with npm: `npm install similo-js`
+
 Getting Started
 ---------
 
