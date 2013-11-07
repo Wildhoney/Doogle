@@ -1,10 +1,9 @@
 {
-  "name": "Similo.js",
+  "name": "similo-js",
   "version": "0.1.0",
   "description": "Node.js app for taking HTML snapshots of JavaScript pages to make your dynamic apps Google crawlable.",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
@@ -32,6 +31,9 @@
     "node-phantom": "~0.2.5",
     "ansi": "~0.2.1",
     "q": "~0.9.7",
-    "moment": "~2.4.0"
+    "moment": "~2.4.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.5",
+    "grunt-contrib-jshint": "~0.7.1"
   }
 }

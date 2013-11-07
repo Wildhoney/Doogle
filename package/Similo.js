@@ -1,5 +1,7 @@
 (function($module) {
 
+    "use strict";
+
     // Lovely little dependencies...
     var $phantom    = require('node-phantom'),
         $fs         = require('fs'),
@@ -142,13 +144,22 @@
             deferStat.promise.fail(function() {
 
                 $phantom.create(function create(error, phantom) {
-                    if (error) return throwError(error);
+
+                    if (error) {
+                        return throwError(error);
+                    }
 
                     return phantom.createPage(function createPage(error, page) {
-                        if (error) return throwError(error);
+
+                        if (error) {
+                            return throwError(error);
+                        }
 
                         page.open(uri, function openPage(error) {
-                            if (error) return throwError(error);
+
+                            if (error) {
+                                return throwError(error);
+                            }
 
                             page.evaluate(function evaluatePage() {
 
@@ -156,10 +167,16 @@
                                 return document.documentElement.innerHTML;
 
                             }, function evaluateResponse(error, result) {
-                                if (error) return throwError(error);
+
+                                if (error) {
+                                    return throwError(error);
+                                }
 
                                 $fs.writeFile(location, result, function writeFile(error) {
-                                    if (error) return throwError(error);
+
+                                    if (error) {
+                                        return throwError(error);
+                                    }
 
                                     // Resolve the promise because we have the file!
                                     $resolve(false);
