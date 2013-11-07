@@ -14,7 +14,9 @@ Getting Started
 
 Similo is **very** to get up and running with. First of all you need to let Similo know which base URL we're going to be using.
 
+```javascript
 var similo = require('similo-js')('http://www.example.com/');
+```
 
 Any time you specify a path to retrieve, it will be appended to the base URL (`http://www.example.com/`).
 
