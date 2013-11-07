@@ -113,6 +113,11 @@
                 // Check if we can return the cached version instead.
                 $fs.stat(location, function stat(error, stats) {
 
+                    if (error) {
+                        deferStat.reject();
+                        return;
+                    }
+
                     var now     = $moment(new Date().getTime()),
                         created = $moment(stats.ctime),
                         diff    = created.diff(now, 'hours');
