@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
-            all: 'package/Similo.js',
+            all: 'package/Doogle.js',
             options: {
                 jshintrc: '.jshintrc'
             }
@@ -14,7 +14,7 @@ module.exports = function(grunt) {
                 banner: '/*! <%= pkg.name %> by <%= pkg.author %> created on <%= grunt.template.today("yyyy-mm-dd") %> */\n'
             },
             build: {
-                src: ['package/Similo.js'],
+                src: ['package/Doogle.js'],
                 dest: 'dist/<%= pkg.name %>.min.js'
             }
         }

@@ -5,14 +5,15 @@ Doogle
 &nbsp;
 <img src="https://badge.fury.io/js/Doogle.png" />
 
-<img src="http://farm8.static.flickr.com/7127/7146261335_90627b033e.jpg" />
-Teaching a dog new tricks.
+**Teaching an old dog new tricks...**
 
 Google translates any hash-bang URLs (`#!`) it finds into an actual GET parameter `_escaped_fragment_`. By listening for this parameter and querying Doogle, we can generate and cache static HTML pages for your JavaScript content.
 
 For a complete reference on Google's AJAX crawling please see <a href="https://developers.google.com/webmasters/ajax-crawling/docs/getting-started" taregt="_blank">getting started</a>.
 
 Install with npm: `npm install doogle`
+
+<img src="http://farm8.static.flickr.com/7127/7146261335_90627b033e.jpg" />
 
 Getting Started
 ---------
