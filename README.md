@@ -3,7 +3,7 @@ Doogle
 
 <img src="https://travis-ci.org/Wildhoney/Doogle.png?branch=master" />
 &nbsp;
-<img src="https://badge.fury.io/js/Doogle.png" />
+<img src="https://badge.fury.io/js/doogle.png" />
 
 **Teaching an old dog new tricks...**
 
