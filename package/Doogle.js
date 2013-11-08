@@ -13,10 +13,10 @@
         $cursor     = $ansi(process.stdout);
 
     /**
-     * @module Similo
+     * @module Doogle
      * @constructor
      */
-    var Similo = function Similo(uri) {
+    var Doogle = function Doogle(uri) {
         this._uri = uri;
     };
 
@@ -24,7 +24,7 @@
      * @property prototype
      * @type {Object}
      */
-    Similo.prototype = {
+    Doogle.prototype = {
 
         /**
          * @property uri
@@ -63,7 +63,7 @@
          */
         throwError: function throwError(message) {
             message = $util.format(" %s\n", message);
-            $cursor.hex('#553c45').bg.hex('#e7a3bd').write(' Similo: ').reset().write(' ' + message + "\n");
+            $cursor.hex('#553c45').bg.hex('#e7a3bd').write(' Doogle: ').reset().write(' ' + message + "\n");
             this.reject(message);
         },
 
@@ -202,7 +202,7 @@
     };
 
     $module.exports = function(uri) {
-        return new Similo(uri);
+        return new Doogle(uri);
     };
 
 })(module);
