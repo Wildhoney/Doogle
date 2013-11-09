@@ -142,7 +142,7 @@
             $scope._promises.response.resolve({
 
                 // Resolve the ultimate promise and continue on our merry way.
-                name            : $util.format('%s.html', $scope._file),
+                name            : $scope._file,
                 cache           : !!fromCache,
                 responseTime    : (new Date().getTime() - this._startTime)
 
@@ -187,6 +187,11 @@
                     // We've retrieved the content and saved it to the cache file, therefore
                     // we can respond!
                     $scope._sendResponse(false);
+
+                }).fail(function() {
+
+                    // Promise rejected and therefore we'll reject the overall promise.
+                    $scope._promises.response.reject();
 
                 });
 
