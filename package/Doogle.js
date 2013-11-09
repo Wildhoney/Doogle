@@ -188,9 +188,10 @@
                     // we can respond!
                     $scope._sendResponse(false);
 
-                }).fail(function() {
+                }).fail(function(message) {
 
                     // Promise rejected and therefore we'll reject the overall promise.
+                    $scope.throwError(message);
                     $scope._promises.response.reject();
 
                 });
@@ -248,27 +249,47 @@
 
             var defer = $scope._promises.phantom;
 
-            $phantom.create(function create(error, phantom) {
+            try {
 
-                phantom.createPage(function createPage(error, page) {
+                $phantom.create(function create(error, phantom) {
 
-                    page.open($scope._path, function openPage() {
+                    if (error) {
+                        throw error;
+                    }
 
-                        page.evaluate(function evaluatePage() {
+                    phantom.createPage(function createPage(error, page) {
 
-                            // Fetch the whole HTML of the document.
-                            return document.documentElement.innerHTML;
+                        if (error) {
+                            throw error;
+                        }
 
-                        }, function evaluateResponse(error, result) {
+                        page.open($scope._path, function openPage(error) {
 
-                            var location = $util.format('%s/%s', $scope._directory, $scope._file);
+                            if (error) {
+                                throw error;
+                            }
 
-                            $fs.writeFile(location, result, function() {
+                            page.evaluate(function evaluatePage() {
 
-                                // Resolve the promise because we have the file at last!
-                                defer.resolve();
+                                // Fetch the whole HTML of the document.
+                                return document.documentElement.innerHTML;
 
-                                phantom.exit();
+                            }, function evaluateResponse(error, result) {
+
+                                if (error) {
+                                    throw error;
+                                }
+
+                                var location = $util.format('%s/%s', $scope._directory, $scope._file);
+
+                                $fs.writeFile(location, result, function() {
+
+                                    // Resolve the promise because we have the file at last!
+                                    defer.resolve();
+
+                                    phantom.exit();
+
+                                });
 
                             });
 
@@ -278,7 +299,11 @@
 
                 });
 
-            });
+            } catch (e) {
+
+                defer.reject(e);
+
+            }
 
             return defer.promise;
 
