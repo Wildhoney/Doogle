@@ -2,6 +2,12 @@
 
     "use strict";
 
+    /**
+     * @property $scope
+     * @type {Doogle}
+     */
+    var $scope;
+
     // Lovely little dependencies...
     var $phantom    = require('node-phantom'),
         $fs         = require('fs'),
@@ -34,6 +40,19 @@
         _uri: null,
 
         /**
+         * @property path
+         * @type {String}
+         * @private
+         */
+        _path: null,
+
+        /**
+         * @property _file
+         * @type {String}
+         */
+        _file: null,
+
+        /**
          * @property directory
          * @type {String}
          * @private
@@ -46,6 +65,42 @@
          * Hours in which the cache file is valid for.
          */
         _expiry: 24,
+
+        /**
+         * @property _timeStarted
+         * @type {Number}
+         */
+        _timeStarted: 0,
+
+        /**
+         * @property _promises
+         * @type {Object}
+         * Object containing the promises to ease the flow.
+         */
+        _promises: {
+
+            /**
+             * @property phantom
+             * @type {Q}
+             * Promise for the majority of the PhantomJS callback hell.
+             */
+            phantom: $q.defer(),
+
+            /**
+             * @property response
+             * @type {Q}
+             * Promise that is the last to be resolved with the data.
+             */
+            response: $q.defer(),
+
+            /**
+             * @property statistics
+             * @type {Q}
+             * Promise for the attempt to retrieve the file from the cache.
+             */
+            statistics: $q.defer()
+
+        },
 
         /**
          * @method setDirectory
@@ -76,114 +131,139 @@
         },
 
         /**
+         * @method _sendResponse
+         * @param fromCache {Boolean}
+         * Responsible for sending the data via the promise.
+         * @return {void}
+         * @private
+         */
+        _sendResponse: function _sendResponse(fromCache) {
+
+            $scope._promises.response.resolve({
+
+                // Resolve the ultimate promise and continue on our merry way.
+                name            : $util.format('%s.html', $scope._file),
+                cache           : !!fromCache,
+                responseTime    : (new Date().getTime() - this._startTime)
+
+            });
+
+        },
+
+        /**
          * @method fetch
          * @param [path = "/"] {String}
          * @return {Q.promise}
          */
         fetch: function fetch(path) {
 
+            // Reset all of the promises.
+            var promises        = $scope._promises;
+            promises.phantom    = $q.defer();
+            promises.response   = $q.defer();
+            promises.statistics = $q.defer();
+
+            // Memorise the time we started this process.
+            $scope._startTime = new Date().getTime();
+
             // Define the path of the output file.
-            var startTime   = new Date().getTime(),
-                uri         = $util.format('%s/%s', this._uri, path || ''),
+            var uri         = $scope._path = $util.format('%s/%s', this._uri, path || ''),
                 sha1        = $crypto.createHash('sha1').update(uri),
-                filename    = sha1.digest('hex'),
-                location    = $util.format('%s/%s.html', this._directory, filename),
-                defer       = $q.defer(),
-                deferStat   = $q.defer(),
-                expiry      = this._expiry,
-                throwError  = this.throwError.bind(defer),
-                $resolve    = function $resolve(fromCache) {
+                filename    = sha1.digest('hex');
 
-                    defer.resolve({
+            // Memorise the file.
+            $scope._file = $util.format('%s.html', filename);
 
-                        // Resolve the ultimate promise and continue on our merry way.
-                        name            : $util.format('%s.html', filename),
-                        cache           : fromCache,
-                        responseTime    : (new Date().getTime() - startTime)
+            // First attempt to find the cached version.
+            $scope._retrieveCache().then(function() {
 
-                    });
+                // We've found the cached version, so let's respond!
+                $scope._sendResponse(true);
 
-                };
+            }).fail(function() {
 
-            if (expiry === false) {
+                $scope._bootstrapPhantom().then(function() {
 
-                // Reject the promise immediately because we don't want to serve cached versions.
-                deferStat.reject();
-
-            } else {
-
-                // Check if we can return the cached version instead.
-                $fs.stat(location, function stat(error, stats) {
-
-                    if (error) {
-                        deferStat.reject();
-                        return;
-                    }
-
-                    var now     = $moment(new Date().getTime()),
-                        created = $moment(stats.ctime),
-                        diff    = created.diff(now, 'hours');
-
-                    if (diff > expiry) {
-                        deferStat.reject();
-                        return;
-                    }
-
-                    deferStat.resolve();
+                    // We've retrieved the content and saved it to the cache file, therefore
+                    // we can respond!
+                    $scope._sendResponse(false);
 
                 });
 
-            }
-
-            // Invoked if the promise for the stats is resolved, and we're simply using the cached version.
-            deferStat.promise.then(function() {
-                $resolve(true);
             });
 
-            // Invoked if the promise for stats is rejected.
-            deferStat.promise.fail(function() {
+            return $scope._promises.response.promise;
 
-                $phantom.create(function create(error, phantom) {
+        },
 
-                    if (error) {
-                        return throwError(error);
-                    }
+        /**
+         * @method _retrieveCache
+         * Responsible for attempting to get the item from the cache.
+         * @return {Q.promise}
+         * @private
+         */
+        _retrieveCache: function _retrieveCache() {
 
-                    return phantom.createPage(function createPage(error, page) {
+            var defer       = $scope._promises.statistics,
+                location    = $util.format('%s/%s', $scope._directory, $scope._file);
 
-                        if (error) {
-                            return throwError(error);
-                        }
+            // Check if we can return the cached version instead.
+            $fs.stat(location, function stat(error, stats) {
 
-                        page.open(uri, function openPage(error) {
+                if (error) {
+                    defer.reject();
+                    return;
+                }
 
-                            if (error) {
-                                return throwError(error);
-                            }
+                var now     = $moment(new Date().getTime()),
+                    created = $moment(stats.ctime),
+                    diff    = created.diff(now, 'hours');
 
-                            page.evaluate(function evaluatePage() {
+                if (diff > $scope._expiry) {
+                    defer.reject();
+                    return;
+                }
 
-                                // Fetch the whole HTML of the document.
-                                return document.documentElement.innerHTML;
+                defer.resolve();
 
-                            }, function evaluateResponse(error, result) {
+            });
 
-                                if (error) {
-                                    return throwError(error);
-                                }
+            return defer.promise;
 
-                                $fs.writeFile(location, result, function writeFile(error) {
+        },
 
-                                    if (error) {
-                                        return throwError(error);
-                                    }
+        /**
+         * @method _bootstrapPhantom
+         * Responsible for dealing with all the seemingly unnecessary and complex callbacks
+         * that PhantomJS forces us to go through.
+         * @return {Q.promise}
+         * @private
+         */
+        _bootstrapPhantom: function _bootstrapPhantom() {
 
-                                    // Resolve the promise because we have the file!
-                                    $resolve(false);
+            var defer = $scope._promises.phantom;
 
-                                    phantom.exit();
+            $phantom.create(function create(error, phantom) {
 
-                                });
+                phantom.createPage(function createPage(error, page) {
+
+                    page.open($scope._path, function openPage() {
+
+                        page.evaluate(function evaluatePage() {
+
+                            // Fetch the whole HTML of the document.
+                            return document.documentElement.innerHTML;
+
+                        }, function evaluateResponse(error, result) {
+
+                            var location = $util.format('%s/%s', $scope._directory, $scope._file);
+
+                            $fs.writeFile(location, result, function() {
+
+                                // Resolve the promise because we have the file at last!
+                                defer.resolve();
+
+                                phantom.exit();
 
                             });
 
@@ -202,7 +282,8 @@
     };
 
     $module.exports = function(uri) {
-        return new Doogle(uri);
+        $scope = new Doogle(uri);
+        return $scope;
     };
 
 })(module);
